@@ -49,22 +49,23 @@ app.get('/search/:word', function(req, res) {
         console.log("getAttributes() returned no results");
         callback(undefined, imageurls);
       } else {
+        console.log("URL FETCHED =>", data);
   	    async.forEach(data, function(attribute, callback) { 
-                images.get(attribute.value, function(err, data){
+                images.get(attribute.category, function(err, data){
                     if (err) {
                         console.log(err);
                     }
-                    imageurls.push(data[0].value);
+                    imageurls.push(data[0].url);
                     callback();
-                 });
+                });
           }, function() {
             callback(undefined, imageurls);
           });
-     }
+    }
     });
   };
 
-  processData(function(err, queryresults) {
+  processData(function(err, queryresults) { 
     if (err) {
       res.send(JSON.stringify({results: undefined, num_results: 0, error: err}));
     } else {
@@ -75,7 +76,7 @@ app.get('/search/:word', function(req, res) {
 
 //INIT Logic
 var images = new dynamoDbTable('images');
-var terms = new dynamoDbTable('terms');
+var terms = new dynamoDbTable('labels');
 
 images.init(
     function(){
@@ -87,5 +88,5 @@ images.init(
         console.log("Terms Storage Starter");
     }    
 );
-
+app.listen(3000, () => console.log(`Listening on port http://127.0.0.1:${3000}!`));
 module.exports = app;

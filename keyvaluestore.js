@@ -4,8 +4,8 @@
   var db = new AWS.DynamoDB();
 
   function keyvaluestore(table) {
-    this.LRU = require("lru-cache");
-    this.cache = this.LRU({ max: 500 });
+    this.LRU = require("lru-cache");  
+    this.cache = new this.LRU({ max: 500 });
     this.tableName = table;
   };
 
@@ -18,8 +18,20 @@
     var tableName = this.tableName;
     var self = this;
     
+    var params = {
+      TableName: tableName
+    }
     
-    whendone(); //Call Callback function.
+    db.describeTable(params, (err, data) => {
+      if(err) {
+        console.log(err);
+      } else {
+        console.log(data);
+        whendone(); //Call Callback function.
+      }
+    });
+
+    
   };
 
   /**
@@ -49,6 +61,92 @@ keyvaluestore.prototype.get = function(search, callback) {
        *    self.cache.set(search, items)
        *    callback(err, items);
        */
+      // var params = {
+      //   TableName: this.tableName,
+      //   ExpressionAttributeNames: {
+      //     '#k': "keyword",
+      //     '#val': 'value'
+      //   },
+      //   ExpressionAttributeValues:{
+      //     ":key" : {"S": search}
+      //   },
+      //   KeyConditionExpression: '#k = :key',
+      //   ProjectionExpression: 'inx,#val,#k'
+      // };
+      var items = [];
+      if(this.tableName == "images") {
+        console.log("========= IMAGES =========");
+        let params = {
+          TableName: this.tableName,
+          ExpressionAttributeNames: {
+            '#keyw': 'keyword',
+            '#murl': 'url'
+          },
+          ExpressionAttributeValues:{
+            ":key" : {S: search}
+          },
+          KeyConditionExpression: '#keyw = :key',
+          ProjectionExpression: '#murl,#keyw'
+        };
+
+        db.query(params, (err, data) => {
+          if(err) {
+            console.log(err);
+          } else {
+            console.log(data);
+            let items = [];
+            data.Items.forEach(item => {
+              console.log("Item =>", item);
+              items.push({
+                "keyword": item.keyword
+                ,"url": item.url.S
+              });
+            });
+            self.cache.set(search,items);
+            callback(null,items);
+            };
+          }
+        );
+      } else if (this.tableName == "labels") {
+        console.log("========= LABELS =========");
+        
+        var params = {
+          TableName: this.tableName,
+          ExpressionAttributeNames: {
+            '#keyw': 'keyword',
+            '#cat': 'category'
+          },
+          ExpressionAttributeValues:{
+            ":key" : {S: search}
+          },
+          KeyConditionExpression: '#keyw = :key',
+          ProjectionExpression: 'inx,#cat,#keyw'
+        };
+
+        db.query(params, (err, data) => {
+          if(err) {
+            console.log(err);
+          } else {
+            console.log(data);
+            let items = [];
+            data.Items.forEach(item => {
+              console.log("Item =>", item);
+              items.push({
+                "keyword": item.keyword
+                ,"inx": item.inx.N
+                ,"category": item.category.S
+              });
+            });
+            self.cache.set(search,items);
+            callback(null,items);
+            };
+          }
+        );
+      }
+      
+      
+      
+      
     }
   };
 
