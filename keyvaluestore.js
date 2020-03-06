@@ -16,12 +16,11 @@
   keyvaluestore.prototype.init = function(whendone) {
     
     var tableName = this.tableName;
-    var self = this;
-    
+
     var params = {
       TableName: tableName
     }
-    
+    //Describe la tabla en la consola.
     db.describeTable(params, (err, data) => {
       if(err) {
         console.log(err);
@@ -48,34 +47,21 @@ keyvaluestore.prototype.get = function(search, callback) {
     if (self.cache.get(search))
           callback(null, self.cache.get(search));
     else {
-        
-      /*
-       * 
-       * La función QUERY debe generar un arreglo de objetos JSON son cada
-       * una de los resultados obtenidos. (inx, value, key).
-       * Al final este arreglo debe ser insertado al cache. Y llamar a callback
-       * 
-       * Ejemplo:
-       *    var items = [];
-       *    items.push({"inx": data.Items[0].inx.N, "value": data.Items[0].value.S, "key": data.Items[0].key});
-       *    self.cache.set(search, items)
-       *    callback(err, items);
-       */
-      // var params = {
-      //   TableName: this.tableName,
-      //   ExpressionAttributeNames: {
-      //     '#k': "keyword",
-      //     '#val': 'value'
-      //   },
-      //   ExpressionAttributeValues:{
-      //     ":key" : {"S": search}
-      //   },
-      //   KeyConditionExpression: '#k = :key',
-      //   ProjectionExpression: 'inx,#val,#k'
-      // };
-      var items = [];
+      let items = [];
       if(this.tableName == "images") {
         console.log("========= IMAGES =========");
+        /* ExpressionAttributeNames: Traduce los atributos de
+          la tabla, en caso de que haya un nombre que coincida
+          con el nombre de alguna palabra reservada.
+
+          ExpressionAttributeValues: Aqui especifico que la llave
+          sea un parámetro de búsqueda, de tipo String.
+
+          KeyConditionExpression: Otra traducción de nombre para
+          utilizarlo en ExpressionAttributeValues
+
+          ProjectionExpression: Aqui se ponen los campos a jalarlos.
+        */
         let params = {
           TableName: this.tableName,
           ExpressionAttributeNames: {
@@ -88,7 +74,9 @@ keyvaluestore.prototype.get = function(search, callback) {
           KeyConditionExpression: '#keyw = :key',
           ProjectionExpression: '#murl,#keyw'
         };
-
+        //Se jalan los datos y se hace un for each
+        //para meterlos en el arreglo items que se mete despues
+        //en la cache.
         db.query(params, (err, data) => {
           if(err) {
             console.log(err);
@@ -109,7 +97,18 @@ keyvaluestore.prototype.get = function(search, callback) {
         );
       } else if (this.tableName == "labels") {
         console.log("========= LABELS =========");
-        
+        /* ExpressionAttributeNames: Traduce los atributos de
+          la tabla, en caso de que haya un nombre que coincida
+          con el nombre de alguna palabra reservada.
+
+          ExpressionAttributeValues: Aqui especifico que la llave
+          sea un parámetro de búsqueda, de tipo String.
+
+          KeyConditionExpression: Otra traducción de nombre para
+          utilizarlo en ExpressionAttributeValues
+
+          ProjectionExpression: Aqui se ponen los campos a jalarlos.
+        */
         var params = {
           TableName: this.tableName,
           ExpressionAttributeNames: {
@@ -122,7 +121,9 @@ keyvaluestore.prototype.get = function(search, callback) {
           KeyConditionExpression: '#keyw = :key',
           ProjectionExpression: 'inx,#cat,#keyw'
         };
-
+        //Se jalan los datos y se hace un for each
+        //para meterlos en el arreglo items que se mete despues
+        //en la cache.
         db.query(params, (err, data) => {
           if(err) {
             console.log(err);
@@ -143,10 +144,6 @@ keyvaluestore.prototype.get = function(search, callback) {
           }
         );
       }
-      
-      
-      
-      
     }
   };
 

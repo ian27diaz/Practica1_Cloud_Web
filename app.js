@@ -39,7 +39,8 @@ app.get('/search/:word', function(req, res) {
   console.log("Stemmed word: "+stemmedword);
   
   var imageurls = new Array(); 
-  
+  //Aqui cambie el nombre de los atributos con
+  //respecto a mi tabla en dynamodb.
   var processData = function(callback) {
       terms.get(stemmedword, function(err, data) {
       if (err) {
