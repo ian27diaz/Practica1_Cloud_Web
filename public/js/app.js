@@ -75,9 +75,9 @@ $(document).ready(function () {
       let maxImagesToRender = (data.num_results >= 4) ? 4 : data.num_results;
       let i;
       //Se renderizan las imagenes que se pudieron renderizar.
+      images = data.results;
       for (i = 0; i < maxImagesToRender; i++) {
         console.log(data);
-        images = data.results;
         $(`#img${i}`).attr("src", images[i]);
 
       }
@@ -86,6 +86,7 @@ $(document).ready(function () {
       for (; i <= 3; i++) {
         $(`#img${i}`).hide();
       }
+      $("#previous").hide();
       //Si hay mas de 4 results, entonces el boton next se hablita.
       if (data.num_results > 4) {
         $("#next").show();
